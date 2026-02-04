@@ -923,7 +923,7 @@ Caveats in delegation chains are **accumulative** - they stack:
 
 ### Caveat Enforcer Addresses
 
-See v0.3.0 changelog for full list of enforcer contract addresses.
+See [v0.3.0 changelog](https://docs.metamask.io/smart-accounts-kit/changelog/0.3.0/) for full list of enforcer contract addresses.
 
 ## Related Concepts
 
