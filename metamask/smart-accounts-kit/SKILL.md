@@ -522,7 +522,7 @@ const userOpHash = await bundlerClient.sendUserOperation({
 
 ### Counterfactual Account Deployment
 
-Delegator accounts must be deployed before delegations can be redeemed. The DelegationManager reverts with `0x3db6791c` for counterfactual accounts.
+Delegator accounts must be deployed before delegations can be redeemed. The DelegationManager reverts with `0xb9f0f171` for counterfactual accounts.
 
 **Solution:** Deploy automatically via first UserOp:
 
