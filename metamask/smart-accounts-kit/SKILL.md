@@ -682,7 +682,7 @@ Error codes from the MetaMask Delegation Framework contracts (v1.3.0). Use a dec
 | `0x3db6791c` | `InvalidEOASignature()` | EOA signature verification failed |
 | `0x155ff427` | `InvalidERC1271Signature()` | Smart contract signature (ERC1271) failed |
 | `0x118cdaa7` | `OwnableUnauthorizedAccount(address)` | Unauthorized account attempted owner-only action |
-| `0x16aba38b` | `OwnableInvalidOwner(address)` | Invalid owner address in ownership transfer |
+| `0x1e4fbdf7` | `OwnableInvalidOwner(address)` | Invalid owner address in ownership transfer |
 | `0xf6b6ef5b` | `InvalidShortString()` | String parameter too short |
 | `0xaa0ea2d8` | `StringTooLong(string)` | String parameter exceeds maximum length |
 
@@ -691,11 +691,11 @@ Error codes from the MetaMask Delegation Framework contracts (v1.3.0). Use a dec
 | Error Code | Error Name | Meaning |
 |------------|-----------|---------|
 | `0xd663742a` | `NotEntryPoint()` | Caller is not the EntryPoint contract |
-| `0xa59f6d8c` | `NotEntryPointOrSelf()` | Caller is neither EntryPoint nor this contract |
+| `0x0796d945` | `NotEntryPointOrSelf()` | Caller is neither EntryPoint nor this contract |
 | `0x1a4b3a04` | `NotDelegationManager()` | Caller is not the DelegationManager |
 | `0xb96fcfe4` | `UnsupportedCallType(bytes1)` | Execution call type not supported |
 | `0x1187dc06` | `UnsupportedExecType(bytes1)` | Execution type not supported |
-| `0xaba473e7` | `NotSelf()` | Caller is not this contract itself |
+| `0x29c3b7ee` | `NotSelf()` | Caller is not this contract itself |
 
 ### Common Caveat Enforcer Errors (Revert Strings)
 
