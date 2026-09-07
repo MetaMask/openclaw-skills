@@ -7,8 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0]
+
+### Uncategorized
+
+- docs: turn Extension UI skill into an MMDS gateway ([#138](https://github.com/MetaMask/skills/pull/138))
+- docs(testing): clarify extension integration homes ([#134](https://github.com/MetaMask/skills/pull/134))
+- docs(testing): ban nested findBy inside waitFor in CV skill ([#132](https://github.com/MetaMask/skills/pull/132))
+- docs(testing): retarget Appium local-run playbook into mobile-testing ([#54](https://github.com/MetaMask/skills/pull/54))
+- docs(testing): await async-gated content in CV tests ([#115](https://github.com/MetaMask/skills/pull/115))
+- chore: add mobile visual testing skill ([#79](https://github.com/MetaMask/skills/pull/79))
+- docs(testing): document CV flakiness and high-leverage assert patterns ([#109](https://github.com/MetaMask/skills/pull/109))
+- chore: add Cursor Bugbot security review rules for skill files ([#63](https://github.com/MetaMask/skills/pull/63))
+- docs: clarify skill contributions and ownership ([#77](https://github.com/MetaMask/skills/pull/77))
+- docs(testing): CV-default Mobile testing layers ([#70](https://github.com/MetaMask/skills/pull/70))
+
 ### Added
 
+- feat: add the metamask-extension base skill set ([#136](https://github.com/MetaMask/skills/pull/136))
+- feat: Add skill for Flashlight, a lighthouse tool for Android vitals ([#146](https://github.com/MetaMask/skills/pull/146))
+- feat: add content-guidelines skill (MetaMask mobile) ([#137](https://github.com/MetaMask/skills/pull/137))
+- feat: add assets domain skills ([#131](https://github.com/MetaMask/skills/pull/131))
+- feat(testing): add unified extension-testing skill (MMQA-2274) ([#130](https://github.com/MetaMask/skills/pull/130))
+- feat: improve swaps cpu audit skill to include info for wider context ([#128](https://github.com/MetaMask/skills/pull/128))
+- feat: update ui-development extension skill to include newly added DS components ([#124](https://github.com/MetaMask/skills/pull/124))
+- feat: Implement skill to add evm networks on extension repo ([#114](https://github.com/MetaMask/skills/pull/114))
+- feat(testing): unify Mobile testing skills (MMQA-2142) ([#86](https://github.com/MetaMask/skills/pull/86))
+- feat(testing): add Mobile test-layer-placement skill ([#80](https://github.com/MetaMask/skills/pull/80))
+- feat(testing): add mobile integration test skill ([#78](https://github.com/MetaMask/skills/pull/78))
+- feat(cli): add opt-in stale skill pruning ([#75](https://github.com/MetaMask/skills/pull/75))
 - Install a **base skill set by default**. Skills marked `base: true` in frontmatter install on every automatic `postinstall` regardless of domain selection, so a fresh clone lands a useful set with no configuration. `yarn skills` is unchanged and still installs every domain. Opt out with `SKILLS_AUTO_UPDATE=0`. ([#135](https://github.com/MetaMask/skills/pull/135))
 - Lint rules for base skills: a `base: true` skill cannot also be `experimental`, and its `description` must be long enough to self-trigger (`BASE_DESCRIPTION_MIN`). Both are errors, so CI fails rather than warning invisibly. ([#135](https://github.com/MetaMask/skills/pull/135))
 - Validate `--domain` / `SKILLS_DOMAINS` against the domains that actually exist. A typo previously installed the base set and exited 0, which reads as success. ([#135](https://github.com/MetaMask/skills/pull/135))
@@ -27,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- fix(sync): preserve configured skill sources ([#121](https://github.com/MetaMask/skills/pull/121))
+- fix(perps): harden validate script and review-pr skill security ([#64](https://github.com/MetaMask/skills/pull/64))
 - `tools/sync` now execs the `tools/install` that shipped beside it in the pinned package, instead of preferring `$METAMASK_SKILLS_DIR/tools/install`. That path defaults to the `.skills-cache` clone tracking `origin/main` with no tag or commit pin, so an automatic `postinstall` could execute unreviewed shell from whatever was on `main` at that moment — bypassing lockfile pinning and release gating. The cache still supplies `domains/` content; it no longer supplies executable code. ([#135](https://github.com/MetaMask/skills/pull/135))
 - Cap the delegated sync subprocess so a stalled child cannot hang `yarn install` indefinitely, and report an `ETIMEDOUT` explicitly rather than returning a bare exit 1. ([#135](https://github.com/MetaMask/skills/pull/135))
 - Append `-oBatchMode=yes` to any existing `GIT_SSH_COMMAND` instead of replacing it. `GIT_TERMINAL_PROMPT`/`GIT_ASKPASS` cover HTTPS only — `ssh` reads `/dev/tty` directly — but overwriting the variable would break a custom key, an agent, or a `ProxyCommand` on the private overlay clone these guards exist to protect. ([#135](https://github.com/MetaMask/skills/pull/135))
@@ -68,6 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `metamask-skills` CLI with `sync`, `postinstall`, and `install` commands
 - Add repo inference, repo-local skills cache support, bundled package fallback, and `SKILLS_AUTO_UPDATE=1` handling for consumer repos
 
-[Unreleased]: https://github.com/MetaMask/skills/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/MetaMask/skills/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/MetaMask/skills/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/MetaMask/skills/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MetaMask/skills/releases/tag/v0.1.0
