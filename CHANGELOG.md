@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Install base skills again when a private overlay is configured. `tools/sync` picked its installer with an `-x` test, which npm and Yarn make false by dropping the executable bit when unpacking, so it fell through to the overlay's copy of `tools/install` — and an overlay predating `base:` installed no base skills while still exiting 0.
+
 ## [0.3.0]
 
 ### Added
