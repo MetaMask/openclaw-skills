@@ -279,6 +279,8 @@ describe('postinstall failure reporting', () => {
     const result = runCli(['postinstall', '--target', root], {
       METAMASK_SKILLS_DIR: src,
       SKILLS_DOMAINS: 'no-such-domain',
+      // postinstall no-ops under CI, which is exactly where this test runs.
+      SKILLS_FORCE_POSTINSTALL: '1',
     });
 
     assert.equal(result.status, 0, 'must never fail yarn install');
