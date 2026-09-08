@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1]
+
 ### Fixed
 
+- fix: run the pinned installer instead of the overlay's copy ([#154](https://github.com/MetaMask/skills/pull/154))
 - Report a failed automatic sync instead of exiting 0 in silence. `postinstall` still never fails `yarn install`, but a non-zero sync (unknown saved domain, unreachable source, no Bash) now warns, so the caller's guard can react and a stale skill set is no longer mistaken for a fresh one.
 - Install base skills again when a private overlay is configured. `tools/sync` picked its installer with an `-x` test, which npm and Yarn make false by dropping the executable bit when unpacking, so it fell through to the overlay's copy of `tools/install` — and an overlay predating `base:` installed no base skills while still exiting 0.
 
@@ -91,7 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `metamask-skills` CLI with `sync`, `postinstall`, and `install` commands
 - Add repo inference, repo-local skills cache support, bundled package fallback, and `SKILLS_AUTO_UPDATE=1` handling for consumer repos
 
-[Unreleased]: https://github.com/MetaMask/skills/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/MetaMask/skills/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/MetaMask/skills/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/MetaMask/skills/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/MetaMask/skills/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/MetaMask/skills/releases/tag/v0.1.0
