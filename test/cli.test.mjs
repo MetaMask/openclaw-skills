@@ -263,6 +263,30 @@ describe('managed skill pruning', () => {
   });
 });
 
+describe('postinstall failure reporting', () => {
+  // A failed sync used to be indistinguishable from a clean one: postinstall
+  // returns 0 by design so it cannot fail `yarn install`, but it returned 0
+  // silently, so the caller's `|| echo` guard could never fire and anything
+  // counting skill directories on disk read the previous install as current.
+  test('warns but still exits 0 when the delegated sync fails', () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), 'skills-postinstall-fail-'));
+    const src = path.join(root, 'src');
+    mkdirSync(path.join(src, 'domains'), { recursive: true });
+    mkdirSync(path.join(src, 'tools'), { recursive: true });
+
+    // A saved domain that does not exist is the realistic trigger: tools/sync
+    // rejects it and exits non-zero.
+    const result = runCli(['postinstall', '--target', root], {
+      METAMASK_SKILLS_DIR: src,
+      SKILLS_DOMAINS: 'no-such-domain',
+    });
+
+    assert.equal(result.status, 0, 'must never fail yarn install');
+    assert.match(`${result.stdout}${result.stderr}`, /auto-update failed/u);
+    rmSync(root, { recursive: true, force: true });
+  });
+});
+
 describe('tools/sync installer resolution', () => {
   // Regression: npm and Yarn drop the executable bit when unpacking a tarball, so
   // every tools/* file arrives 0644 in a consumer install. sync used to gate on
