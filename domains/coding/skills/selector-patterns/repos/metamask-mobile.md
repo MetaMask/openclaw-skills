@@ -86,7 +86,7 @@ Narrow the input to the smallest slice first (`performance` / `mm-selector-memoi
 | boolean, number, string | `createSelector` from `reselect` |
 | object, array, Map, Set | `createDeepEqualSelector` from `app/selectors/util.ts` when the narrowed input still churns (fresh ref every dispatch) and the payload is small enough to deep-compare |
 
-A sub-key read plus a module-level empty constant may stay on `createSelector`. Identity passthrough of a whole controller slice that allocates a new object every dispatch belongs on `createDeepEqualSelector`, or skip the wrapper and use the leaf. Copy before sort: `[...items].sort(cmp)`.
+A sub-key read plus a module-level empty constant may stay on `createSelector`.
 
 ## UI
 
@@ -152,9 +152,5 @@ describe('selectTokensByAddress', () => {
 - New and changed UI: `state.engine.backgroundState` in components, hooks, or other UI
 - Inline `useSelector((state) => …)` derivation
 - `useSelector(x, isEqual)` as a substitute for a stable selector
-- Identity `createSelector` on a whole controller slice
-- Inline `?? {}` / `?? []` creating a new ref on every call
-- Mutating inputs in the result function (`items.sort` without copying)
 - Version-gated flag evaluation outside `feature-flags`
-
-Memoization audits of existing selectors: `performance` (`mm-selector-memoization.md`).
+- Selector memoization (identity wrappers, new refs in result functions, mutation, huge inputs): `performance` (`mm-selector-memoization.md`)
