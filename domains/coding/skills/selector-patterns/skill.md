@@ -34,7 +34,7 @@ Implement or update:
 1. Search for an existing named selector before adding one.
 2. Put new selectors in `app/selectors/<feature>.ts` (or the feature’s `selectors/` folder).
 3. Add a leaf input selector that reads the controller slice. Compose derived selectors on top of it.
-4. Choose `createSelector` (primitive output) or `createDeepEqualSelector` (object / array output).
+4. Narrow the input to the smallest slice. Choose `createSelector` (primitive output) or `createDeepEqualSelector` (object / array when the narrowed input still churns and the payload is small enough to compare).
 5. Name it `select<Feature><Thing>`.
 6. In components and hooks, call `useSelector(selectX)` with that named selector.
 7. Add collocated unit tests with at least two state variants.

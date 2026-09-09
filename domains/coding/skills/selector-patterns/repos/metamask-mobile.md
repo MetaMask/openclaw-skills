@@ -5,7 +5,7 @@ parent: selector-patterns
 
 # Selector patterns — MetaMask Mobile
 
-Copy from `app/selectors/addressBookController.ts` (leaf + `createSelector` + `createDeepEqualSelector`) and `app/selectors/tokensController.ts` (collection outputs, stable empty constant). Tests: `yarn jest app/selectors/<feature>.test.ts --no-coverage`. Unit-test shape: `mobile-testing`. Engine wiring that needs a first selector: install/use `coding/selector-patterns` from `controller-integration`. Memoization audits: `performance`. Version-gated flags: `feature-flags`.
+Copy from `app/selectors/tokensController.ts` (`EMPTY_TOKENS_BY_ADDRESS`, `EMPTY_TOKENS`, `selectTokensByAddress`, `selectAllTokensFlat`, `selectTokensLength`). Tests: `yarn jest app/selectors/<feature>.test.ts --no-coverage` (shape: `app/selectors/tokensController.test.ts`; unit-test skill: `mobile-testing`). Opt in: `yarn skills --include coding/selector-patterns --save`. Engine wiring: `controller-integration`. Memoization audits: `performance` (`mm-selector-memoization.md`). Version-gated flags: `feature-flags`.
 
 ## Paths
 
@@ -16,108 +16,125 @@ Copy from `app/selectors/addressBookController.ts` (leaf + `createSelector` + `c
 | Deep-equal helper | `app/selectors/util.ts` → `createDeepEqualSelector` |
 | Collocated tests | `app/selectors/<feature>.test.ts` |
 
-New selectors use `select<Feature><Thing>` (e.g. `selectTokensByChainId`). Existing `get*` names stay; do not rename them in this change.
+New selectors use `select<Feature><Thing>` (e.g. `selectTokensByChainIdAndAddress`). Existing `get*` names stay; do not rename them in this change.
 
 ## Leaf vs derived
 
-Only leaf input selectors read `state.engine.backgroundState`. Use `?? getDefault<Name>State()` when that helper exists.
+Only leaf input selectors read `state.engine.backgroundState`. Use `?? getDefault<Name>State()` when that helper exists. Illustrative leaf (plain function, not a file to copy):
 
 ```ts
-import { RootState } from '../reducers';
+export const selectFooControllerState = (state: RootState) =>
+  state.engine.backgroundState.FooController ?? getDefaultFooControllerState();
+```
+
+Derived selectors compose on a named, narrowed input. From `tokensController.ts`:
+
+```ts
+import { Token, TokensControllerState } from '@metamask/assets-controllers';
 import { createSelector } from 'reselect';
 import { createDeepEqualSelector } from './util';
-import { Hex } from '@metamask/utils';
 
-const EMPTY_ADDRESS_BOOK: Readonly<Record<string, never>> = Object.freeze({});
-const EMPTY_ADDRESS_BOOK_CHAIN: readonly never[] = Object.freeze([]);
-
-export const selectAddressBookControllerState = (state: RootState) =>
-  state.engine.backgroundState.AddressBookController;
-
-export const selectAddressBook = createSelector(
-  selectAddressBookControllerState,
-  (addressBookControllerState) =>
-    addressBookControllerState?.addressBook ?? EMPTY_ADDRESS_BOOK,
+const EMPTY_TOKENS_BY_ADDRESS: Readonly<Record<string, never>> = Object.freeze(
+  {},
 );
 
-export const selectAddressBookByChain = createDeepEqualSelector(
-  [selectAddressBook, (_state: RootState, chainId: Hex) => chainId],
-  (addressBook, chainId: Hex) => {
-    if (!addressBook[chainId]) {
-      return EMPTY_ADDRESS_BOOK_CHAIN;
+const EMPTY_TOKENS: Token[] = Object.freeze([] as Token[]) as Token[];
+
+export const selectTokensByAddress = createDeepEqualSelector(
+  selectTokens,
+  (tokens: Token[]): { [address: string]: Token } => {
+    if (!tokens?.length) {
+      return EMPTY_TOKENS_BY_ADDRESS;
     }
-    return Object.values(addressBook[chainId]);
+
+    return tokens.reduce<Record<string, Token>>((tokensMap, token) => {
+      tokensMap[token.address] = token;
+      return tokensMap;
+    }, {});
   },
+);
+
+export const selectAllTokensFlat = createDeepEqualSelector(
+  getTokensControllerAllTokens,
+  (tokensByAccountByChain: TokensControllerState['allTokens']): Token[] => {
+    const groups = Object.values(tokensByAccountByChain);
+    if (groups.length === 0) {
+      return EMPTY_TOKENS;
+    }
+
+    return groups.reduce<Token[]>((acc, tokensByAccount) => {
+      const tokensArray = Object.values(tokensByAccount).flat();
+      return acc.concat(...tokensArray);
+    }, []);
+  },
+);
+
+export const selectTokensLength = createSelector(
+  selectTokens,
+  (tokens: Token[]) => tokens.length,
 );
 ```
 
-`EMPTY_ADDRESS_BOOK` / `EMPTY_ADDRESS_BOOK_CHAIN` are module-level constants (see `EMPTY_TOKENS_BY_ADDRESS` in `tokensController.ts`). Inline `?? {}` / `?? []` on a plain `createSelector` allocates a new ref every call.
+`EMPTY_TOKENS` / `EMPTY_TOKENS_BY_ADDRESS` are module-level constants. Inline `?? {}` / `?? []` on a plain `createSelector` allocates a new ref every call.
 
 ## Factory choice
+
+Narrow the input to the smallest slice first (`performance` / `mm-selector-memoization.md`). Then:
 
 | Output | Factory |
 |--------|---------|
 | boolean, number, string | `createSelector` from `reselect` |
-| object, array, Map, Set | `createDeepEqualSelector` from `app/selectors/util.ts` |
+| object, array, Map, Set | `createDeepEqualSelector` from `app/selectors/util.ts` when the narrowed input still churns (fresh ref every dispatch) and the payload is small enough to deep-compare |
 
-Identity passthrough of a controller slice (`createSelector(selectX, (s) => s.things)`) belongs on `createDeepEqualSelector`. Copy before sort: `[...items].sort(cmp)`.
+A sub-key read plus a module-level empty constant may stay on `createSelector`. Identity passthrough of a whole controller slice that allocates a new object every dispatch belongs on `createDeepEqualSelector`, or skip the wrapper and use the leaf. Copy before sort: `[...items].sort(cmp)`.
 
 ## UI
 
 ```ts
-const addressBook = useSelector(selectAddressBook);
+const tokensByAddress = useSelector(selectTokensByAddress);
 ```
 
 ## Tests
 
-Collocate `app/selectors/<feature>.test.ts`. At least two state variants per new selector (populated + empty/missing). Present tense, AAA, no "should". `yarn jest app/selectors/<feature>.test.ts --no-coverage`.
+Collocate `app/selectors/<feature>.test.ts`. At least two state variants per new selector (populated + empty/missing). Present tense, AAA, no "should". `yarn jest app/selectors/<feature>.test.ts --no-coverage`. Fixtures (`mockRootState`, `mockToken`, `mockTokensControllerState`) live in `tokensController.test.ts`:
 
 ```ts
-describe('selectAddressBook', () => {
-  it('returns addressBook from AddressBookController state', () => {
-    const mockState = {
+describe('selectTokensByAddress', () => {
+  it('returns tokens mapped by address', () => {
+    expect(selectTokensByAddress(mockRootState)).toStrictEqual({
+      '0xToken1': mockToken,
+    });
+  });
+
+  it('handles an empty tokens array', () => {
+    const stateWithoutTokens = {
+      ...mockRootState,
       engine: {
         backgroundState: {
-          AddressBookController: {
-            addressBook: {
+          TokensController: {
+            ...mockTokensControllerState,
+            allTokens: {
               '0x1': {
-                '0x123': {
-                  address: '0x123',
-                  name: 'Alice',
-                  chainId: '0x1',
-                  memo: 'Friend',
-                  isEns: false,
+                '0xAddress1': [],
+              },
+            },
+            tokens: [],
+          },
+          AccountsController: {
+            internalAccounts: {
+              selectedAccount: '0xAddress1',
+              accounts: {
+                '0xAddress1': {
+                  address: '0xAddress1',
                 },
               },
             },
           },
         },
       },
-    };
+    } as unknown as RootState;
 
-    expect(selectAddressBook(mockState as RootState)).toEqual({
-      '0x1': {
-        '0x123': {
-          address: '0x123',
-          name: 'Alice',
-          chainId: '0x1',
-          memo: 'Friend',
-          isEns: false,
-        },
-      },
-    });
-  });
-
-  it('returns an empty object when addressBook is missing', () => {
-    const mockState = {
-      engine: {
-        backgroundState: {
-          AddressBookController: {},
-        },
-      },
-    };
-
-    expect(selectAddressBook(mockState as RootState)).toEqual({});
+    expect(selectTokensByAddress(stateWithoutTokens)).toStrictEqual({});
   });
 });
 ```
@@ -126,16 +143,18 @@ describe('selectAddressBook', () => {
 
 - New and changed selectors live under `app/selectors/<feature>.ts` (or the feature’s `selectors/` folder), named `select<Feature><Thing>`.
 - Only leaf input selectors read `state.engine.backgroundState` (with `?? getDefault<Name>State()` when that helper exists).
-- Derive with `createSelector` (primitives) or `createDeepEqualSelector` (object / array). Stable module-level empty constants instead of inline `?? {}` / `?? []` on plain `createSelector`.
+- Narrow the input first. Derive with `createSelector` (primitives) or `createDeepEqualSelector` (object / array when the narrowed input still churns and the payload is small enough to compare). Stable module-level empty constants instead of inline `?? {}` / `?? []` on plain `createSelector`.
 - Collocated unit tests with at least two state variants.
 - Components and hooks use `useSelector(selectX)` with the named selector.
 
 ## Reject
 
-- `state.engine.backgroundState` in components, hooks, or other UI
+- New and changed UI: `state.engine.backgroundState` in components, hooks, or other UI
 - Inline `useSelector((state) => …)` derivation
 - `useSelector(x, isEqual)` as a substitute for a stable selector
-- Identity `createSelector` on a controller slice
+- Identity `createSelector` on a whole controller slice
 - Inline `?? {}` / `?? []` creating a new ref on every call
 - Mutating inputs in the result function (`items.sort` without copying)
 - Version-gated flag evaluation outside `feature-flags`
+
+Memoization audits of existing selectors: `performance` (`mm-selector-memoization.md`).
