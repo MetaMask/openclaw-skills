@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Shorten the `performance` skill description to fit the strictest operator budget, so the skill installs without a "description exceeds 1024 characters" error in the pi coding agent, and lower `DESCRIPTION_MAX` in `tools/skill-schema.mjs` to 1024 so the linter rejects descriptions pi cannot load.
+
 ## [0.3.1]
 
 ### Fixed
